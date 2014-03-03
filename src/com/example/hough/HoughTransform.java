@@ -51,6 +51,18 @@ public class HoughTransform {
         } 
     } 
     
+    /*
+    public void addPoints(Mat image) { 
+	for (int x = 0; x < image.cols(); x++) { 
+        for (int y = 0; y < image.rows(); y++) { 
+            double[] color = image.get(y, x);
+            if (color[0] != 0) { 
+                addPoint(x, y); 
+            }
+        } 
+    } 
+}	*/
+    
     public void addPoint(int x, int y) { 
         for (int t = 0; t < maxTheta; t++) { 
             int r = (int) (((x - centerX) * cosCache[t]) + ((y - centerY) * sinCache[t])); 

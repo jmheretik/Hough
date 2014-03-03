@@ -59,7 +59,7 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
     
     private int threshold = 20;
     private int minLineSize = 10;
-    private int lineGap = 200;
+    private int maxLineGap = 200;
     //private double mean;
 
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
@@ -192,7 +192,7 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
         	
          
         	//line detection						// 5-3 fps
-            Imgproc.HoughLinesP(thresholdImage, lines, 1, Math.PI/180, threshold, minLineSize, lineGap);
+            Imgproc.HoughLinesP(thresholdImage, lines, 1, Math.PI/180, threshold, minLineSize, maxLineGap);
          
             //line draw
             for (int i = 0; i < lines.cols(); i++)
@@ -226,15 +226,19 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
 
         	/*     6 fps */
         	Bitmap threshBitmap = Bitmap.createBitmap(thresholdImage.cols(), thresholdImage.rows(), Bitmap.Config.ARGB_8888);
-        	//Bitmap mRgbaBitmap = Bitmap.createBitmap(mRgba.cols(), mRgba.rows(), Bitmap.Config.ARGB_8888);
         	Utils.matToBitmap(thresholdImage, threshBitmap);
+        	//Bitmap mRgbaBitmap = Bitmap.createBitmap(mRgba.cols(), mRgba.rows(), Bitmap.Config.ARGB_8888);
         	//Utils.matToBitmap(mRgba, mRgbaBitmap);
         	
             HoughTransform h = new HoughTransform(thresholdImage.cols(), thresholdImage.rows()); 
             
-            h.addPoints(threshBitmap); 
+            //0.5 fps
+            //h.addPoints(thresholdImage); 
+            
+            //1-2fps
+            h.addPoints(threshBitmap);
      
-            Vector<HoughLine> lines = h.getLines(30); 
+            Vector<HoughLine> lines = h.getLines(25); 
      
             for (int j = 0; j < lines.size(); j++) { 
                 HoughLine line = lines.elementAt(j); 
@@ -243,7 +247,7 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
             //Utils.bitmapToMat(mRgbaBitmap, mRgba);
             
             //cleanup
-            //Log.i(TAG, "Java lines:" + lines.size());
+            Log.i(TAG, "Java lines:" + lines.size());
             /*
             mRgbaBitmap.recycle();
             mRgbaBitmap = null;
@@ -290,12 +294,12 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
                     Toast.LENGTH_SHORT).show();
         } 
         else if (item == mItemLineGap) {
-            if (lineGap < 200){
-            	lineGap += 20;
+            if (maxLineGap < 200){
+            	maxLineGap += 20;
             } else {
-            	lineGap = 20;
+            	maxLineGap = 20;
             }
-            Toast.makeText(HoughActivity.this,"lineGap: "+lineGap,  
+            Toast.makeText(HoughActivity.this,"lineGap: "+maxLineGap,  
                     Toast.LENGTH_SHORT).show();
         } 
 

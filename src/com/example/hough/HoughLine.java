@@ -26,7 +26,7 @@ public class HoughLine {
         double tcos = Math.cos(theta); 
  
         if (theta < Math.PI * 0.25 || theta > Math.PI * 0.75) { 
-            for (int y = 0; y < height; y++) { 
+            for (int y = height/2; y < height; y++) { 
                 int x = (int) ((((r - houghHeight) - ((y - centerY) * tsin)) / tcos) + centerX); 
                 if (x < width && x >= 0) { 
                     image.put(y, x, new double[]{255, 0, 0, 0});
@@ -35,7 +35,7 @@ public class HoughLine {
         } else { 
             for (int x = 0; x < width; x++) { 
                 int y = (int) ((((r - houghHeight) - ((x - centerX) * tcos)) / tsin) + centerY); 
-                if (y < height && y >= 0) {  
+                if (y < height && y >= height/2) {  
                     image.put(y, x, new double[]{255, 0, 0, 0});
                 } 
             } 
