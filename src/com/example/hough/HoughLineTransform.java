@@ -1,11 +1,11 @@
 package com.example.hough;
 
 import android.graphics.Bitmap; 
-import android.graphics.Bitmap.Config;
-import android.graphics.Color;
 import java.util.Vector;
 
-public class HoughTransform { 
+import org.opencv.core.Mat;
+
+public class HoughLineTransform { 
  
     private final int neighbourhoodSize = 4; 
     private final int maxTheta = 180; 
@@ -19,7 +19,7 @@ public class HoughTransform {
     private double[] sinCache; 
     private double[] cosCache; 
  
-    public HoughTransform(int width, int height) { 
+    public HoughLineTransform(int width, int height) { 
         this.width = width; 
         this.height = height; 
         initialise(); 
@@ -51,17 +51,17 @@ public class HoughTransform {
         } 
     } 
     
-    /*
+    
     public void addPoints(Mat image) { 
-	for (int x = 0; x < image.cols(); x++) { 
-        for (int y = 0; y < image.rows(); y++) { 
-            double[] color = image.get(y, x);
-            if (color[0] != 0) { 
-                addPoint(x, y); 
-            }
-        } 
-    } 
-}	*/
+    	for (int x = 0; x < image.cols(); x++) { 
+    		for (int y = 0; y < image.rows(); y++) { 
+    			double[] color = image.get(y, x);
+    			if (color[0] != 0) { 
+    				addPoint(x, y); 
+    			}
+    		} 
+    	} 
+    }
     
     public void addPoint(int x, int y) { 
         for (int t = 0; t < maxTheta; t++) { 
@@ -101,31 +101,4 @@ public class HoughTransform {
         } 
         return lines; 
     } 
-
-    public int getHighestValue() { 
-        int max = 0; 
-        for (int t = 0; t < maxTheta; t++) { 
-            for (int r = 0; r < doubleHeight; r++) { 
-                if (houghArray[t][r] > max) { 
-                    max = houghArray[t][r]; 
-                } 
-            } 
-        } 
-        return max; 
-    } 
- 
-    public Bitmap getHoughArrayImage() { 
-        int max = getHighestValue(); 
-        Bitmap image = Bitmap.createBitmap(maxTheta, doubleHeight, Config.ARGB_8888); 
-        for (int t = 0; t < maxTheta; t++) { 
-            for (int r = 0; r < doubleHeight; r++) { 
-                double value = 255 * ((double) houghArray[t][r]) / max; 
-                int v = 255 - (int) value; 
-                int c = Color.rgb(v, v, v); 
-                image.setPixel(t, r, c); 
-            } 
-        } 
-        return image; 
-    } 
- 
 } 
