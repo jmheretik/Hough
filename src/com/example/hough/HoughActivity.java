@@ -1,5 +1,8 @@
 package com.example.hough;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.Random;
 import java.util.Vector;
 
 import org.opencv.android.BaseLoaderCallback;
@@ -19,8 +22,10 @@ import org.opencv.imgproc.Imgproc;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -30,6 +35,7 @@ import android.widget.Toast;
 import com.example.hough.R;
 import com.example.hough.HoughLine;
 import com.example.hough.HoughLineTransform;
+import com.example.hough.HoughCircleTransform;
 
 public class HoughActivity extends Activity implements CvCameraViewListener2 {
     private static final String    TAG = "Hough Activity";
@@ -188,10 +194,10 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
         	//Imgproc.threshold(thresholdImage, mRgba, 100, 255, Imgproc.THRESH_BINARY);
         	
         	//vymazanie bieleho riadka na hranici segmentacie	//10-11 fps
-        	thresholdImage.row(thresholdImage.rows()/2).setTo(new Scalar(0));
+        	//thresholdImage.row(thresholdImage.rows()/2).setTo(new Scalar(0));
         	
         	//vymazanie malych bodov 				//9 fps
-        	//Imgproc.erode(thresholdImage, thresholdImage, Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(2,2)));
+        	Imgproc.erode(thresholdImage, thresholdImage, Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(2,2)));
         	
         	
         	//edge detection						//6 fps
@@ -200,8 +206,8 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
         	Imgproc.Canny(thresholdImage, mRgba, 0.66*mean, 1.33*mean);
         	*/
         	
-        	//line segments detection					// 5-3 fps
-            Imgproc.HoughLinesP(thresholdImage, lines, 1, Math.PI/180, linesThreshold, opencvMinLineSize, opencvMaxLineGap);
+        	//line segments detection					// 4-2 fps
+            /*Imgproc.HoughLinesP(thresholdImage, lines, 1, Math.PI/180, linesThreshold, opencvMinLineSize, opencvMaxLineGap);
         	
         	
             //line segment draw
@@ -216,10 +222,36 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
                   Point end = new Point(x2, y2);
          
                   Core.line(mRgba, start, end, new Scalar(255,0,0), 3);
+            }*/
+            
+        	//line detection	//3-2 fps
+            Imgproc.HoughLines(thresholdImage, lines, 1, Math.PI/180, linesThreshold);
+            
+            //line draw
+            Mat tmp = new Mat(mRgba.rows(), mRgba.cols(), CvType.CV_8UC4);
+            mRgba.copyTo(tmp);
+            for (int j = 0; j < lines.cols(); j++) { 
+            	double[] vec = lines.get(0, j);
+            	double	 rho = vec[0],
+            			 theta = vec[1];
+            	
+            	Point 	 start, end;
+            	if((theta < Math.PI/4 || theta > 3 * Math.PI/4)){
+                    start = new Point(rho / Math.cos(theta), 0);
+                    end = new Point( (rho - tmp.rows() * Math.sin(theta))/Math.cos(theta), tmp.rows());
+                }else {
+                    start = new Point(0, rho / Math.sin(theta));
+                    end = new Point(tmp.cols(), (rho - tmp.cols() * Math.cos(theta))/Math.sin(theta));
+                }
+            	
+                Core.line(tmp, start, end, new Scalar(255,0,0), 3);
             }
-
+            tmp.submat(tmp.rows()/2, tmp.rows(), 0, tmp.cols()).copyTo(mRgba.submat(mRgba.rows()/2, mRgba.rows(), 0, mRgba.cols()));
+            
             //cleanup
             Log.i(TAG, "OpenCV lines:" + lines.cols());
+            tmp.release();
+            tmp = null;
             lines.release();
             lines = null;
             break;
@@ -292,10 +324,55 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
             break;
     	case VIEW_MODE_JAVA_CIRCLES:   
     		//input frame has gray scale format    
-        	mRgba = inputFrame.rgba();			
-        	
+    		mRgba = inputFrame.rgba();			
+        	/*mGray = inputFrame.gray();
+        	mGray.submat(mGray.rows()/2, mGray.rows(), 0, mGray.cols()).copyTo(thresholdImage.submat(thresholdImage.rows()/2, thresholdImage.rows(), 0, thresholdImage.cols()));
+        	Imgproc.adaptiveThreshold(thresholdImage, thresholdImage, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY, 3, -1);
+        	Imgproc.erode(thresholdImage, thresholdImage, Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(2,2)));
+
+        	// 6 fps 
+        	Utils.matToBitmap(thresholdImage, threshBitmap);*/
+        	//Utils.matToBitmap(mRgba, mRgbaBitmap);
+    		File file = new File(Environment.getExternalStorageDirectory().toString()+"/image.jpg");
+    		Bitmap image = BitmapFactory.decodeFile(file.getAbsolutePath());
+    		Bitmap copy = Bitmap.createScaledBitmap(image, image.getWidth(), image.getHeight(), false);
+            HoughCircleTransform h = new HoughCircleTransform(); 
+            
+            
+            //0.5 fps
+            //houghLineTransform.addPoints(thresholdImage); 
+            
+            //1-2fps
+            h.addPoints(copy);
+     
+            /*Vector<HoughLine> linez = h.getLines(); 
+     
+            for (int j = 0; j < linez.size(); j++) { 
+                HoughLine line = linez.elementAt(j); 
+                line.draw(image, Color.RED); 
+                //line.draw(mRgba); 
+            }*/
+            String root = Environment.getExternalStorageDirectory().toString();
+            File myDir = new File(root + "/tmp");    
+            myDir.mkdirs();
+            Random generator = new Random();
+            int n = 10000;
+            n = generator.nextInt(n);
+            String fname = "Image-"+ n +".jpg";
+            File save = new File (myDir, fname);
+            Log.i("TAG",fname);
+            if (save.exists ()) save.delete (); 
+            try {
+                   FileOutputStream out = new FileOutputStream(save);
+                   image.compress(Bitmap.CompressFormat.JPEG, 90, out);
+                   out.flush();
+                   out.close();
+            } catch (Exception e) {
+                   e.printStackTrace();
+            }
+     
         	Log.i(TAG, "Java circles:");
-            break;
+            this.finish();
         }
 
         return mRgba;
