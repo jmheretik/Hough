@@ -4,16 +4,29 @@ import org.opencv.core.Mat;
 
 import android.graphics.Bitmap;
 
+/** 
+* Represents a linear line as detected by the hough transform. 
+* This line is represented by an angle theta and a radius from the centre. 
+* 
+* @author Olly Oechsle, University of Essex, Date: 13-Mar-2008, Jakub Medvecký-Heretik
+* @version 1.0 
+*/ 
 public class HoughLine { 
  
     private double theta; 
     private double r; 
- 
+    
+    /** 
+     * Initialises the hough line 
+     */ 
     public HoughLine(double theta, double r) { 
         this.theta = theta; 
         this.r = r; 
     } 
  
+    /** 
+     * Draws the line on the image of your choice with the RGB colour of your choice. 
+     */
     public void draw(Bitmap image, int color) { 
     	 
         int height = image.getHeight(); 
@@ -57,7 +70,13 @@ public class HoughLine {
         } 
     } 
     
-    public void draw(Mat image, int color) { 
+    /** 
+     * Draws red line on the image (in OpenCV's org.opencv.core.Mat format). 
+     * Thickness of line is 3 px.
+     * 
+     * @author Jakub Medvecký-Heretik
+     */
+    public void draw(Mat image) { 
  
         int height = image.rows(); 
         int width = image.cols(); 
