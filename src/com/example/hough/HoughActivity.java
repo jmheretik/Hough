@@ -295,11 +295,11 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
         	Imgproc.adaptiveThreshold(thresholdImage, thresholdImage, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY, 3, -1);
         	Imgproc.erode(thresholdImage, thresholdImage, Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(2,2)));
 
-            MyHoughLineTransform houghCircleTransform = new MyHoughLineTransform(thresholdImage, linesThreshold, 180);
+            MyHoughLineTransform h = new MyHoughLineTransform(thresholdImage, linesThreshold, 180);
             
             Mat temp = new Mat(mRgba.rows(), mRgba.cols(), CvType.CV_8UC4);
             mRgba.copyTo(temp);
-            houghCircleTransform.drawLines(temp);
+            h.drawLines(temp);
             temp.submat(temp.rows()/2, temp.rows(), 0, temp.cols()).copyTo(mRgba.submat(mRgba.rows()/2, mRgba.rows(), 0, mRgba.cols()));
             
             //cleanup
