@@ -1,5 +1,8 @@
 package com.example.hough;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.Random;
 import java.util.Vector;
 
 import org.opencv.android.BaseLoaderCallback;
@@ -19,7 +22,9 @@ import org.opencv.imgproc.Imgproc;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -41,7 +46,7 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
     private static final int       VIEW_MODE_JAVA_LINES		= 4;
     private static final int       VIEW_MODE_MY_JAVA_LINES	= 5;
     private static final int       VIEW_MODE_OPENCV_CIRCLES	= 6;
-    private static final int       VIEW_MODE_JAVA_CIRCLES	= 7;
+    private static final int       VIEW_MODE_MY_JAVA_CIRCLES	= 7;
 
     private int                    mViewMode;
     private Mat                    mRgba;
@@ -59,7 +64,7 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
     private MenuItem               mItemPreviewJavaLines;
     private MenuItem               mItemPreviewMyJavaLines;
     private MenuItem               mItemPreviewOpencvCircles;
-    private MenuItem               mItemPreviewJavaCircles;
+    private MenuItem               mItemPreviewMyJavaCircles;
     private MenuItem			   mItemLinesThreshold;
     private MenuItem			   mItemOpencvMinLineSize;
     private MenuItem			   mItemOpencvMaxLineGap;
@@ -114,7 +119,7 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
         mItemPreviewJavaLines = menu.add("Java lines");
         mItemPreviewMyJavaLines = menu.add("My Java lines");
         mItemPreviewOpencvCircles = menu.add("OpenCV circles");
-        mItemPreviewJavaCircles = menu.add("Java circles");
+        mItemPreviewMyJavaCircles = menu.add("My Java circles");
         mItemLinesThreshold = menu.add("Lines threshold");
         mItemOpencvMinLineSize = menu.add("Min line size");
         mItemOpencvMaxLineGap = menu.add("Max line gap");
@@ -295,11 +300,11 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
         	Imgproc.adaptiveThreshold(thresholdImage, thresholdImage, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY, 3, -1);
         	Imgproc.erode(thresholdImage, thresholdImage, Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(2,2)));
 
-            MyHoughLineTransform h = new MyHoughLineTransform(thresholdImage, linesThreshold, 180);
+            MyHoughLineTransform myHoughLineTransform = new MyHoughLineTransform(thresholdImage, linesThreshold, 180);
             
             Mat temp = new Mat(mRgba.rows(), mRgba.cols(), CvType.CV_8UC4);
             mRgba.copyTo(temp);
-            h.drawLines(temp);
+            myHoughLineTransform.drawLines(temp);
             temp.submat(temp.rows()/2, temp.rows(), 0, temp.cols()).copyTo(mRgba.submat(mRgba.rows()/2, mRgba.rows(), 0, mRgba.cols()));
             
             //cleanup
@@ -340,49 +345,66 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
             circles.release();
             circles = null;
             break;
-    	case VIEW_MODE_JAVA_CIRCLES:   
-    		//input frame has gray scale format    
-    		mRgba = inputFrame.rgba();			
-        	/*mGray = inputFrame.gray();
-        	mGray.submat(mGray.rows()/2, mGray.rows(), 0, mGray.cols()).copyTo(thresholdImage.submat(thresholdImage.rows()/2, thresholdImage.rows(), 0, thresholdImage.cols()));
+    	case VIEW_MODE_MY_JAVA_CIRCLES:   
+    		//input frame has gray scale format     	
+        	mRgba = inputFrame.rgba();			
+        	mGray = inputFrame.gray();
+        	mGray.copyTo(thresholdImage);
         	Imgproc.adaptiveThreshold(thresholdImage, thresholdImage, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY, 3, -1);
         	Imgproc.erode(thresholdImage, thresholdImage, Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(2,2)));
 
-        	// 6 fps 
-        	Utils.matToBitmap(thresholdImage, threshBitmap);*/
-        	//Utils.matToBitmap(mRgba, mRgbaBitmap);
-    		/*File file = new File(Environment.getExternalStorageDirectory().toString()+"/image.jpg");
-    		Bitmap image = BitmapFactory.decodeFile(file.getAbsolutePath());
-    		Bitmap copy = image.copy(image.getConfig(), true);
-            //HoughCircleTransform h = new HoughCircleTransform(copy); 
+            MyHoughCircleTransformWithKnownRadius myHoughCircleTransformWithKnownRadius = new MyHoughCircleTransformWithKnownRadius(thresholdImage, 20, 180, 30);
+            myHoughCircleTransformWithKnownRadius.drawCircles(mRgba);
             
-            String root = Environment.getExternalStorageDirectory().toString();
-            File myDir = new File(root + "/tmp");    
-            myDir.mkdirs();
-            Random generator = new Random();
-            int n = 10000;
-            n = generator.nextInt(n);
-            String fname = "Image-"+ n +".jpg";
-            File save = new File (myDir, fname);
-            Log.i("TAG",fname);
-            if (save.exists ()) save.delete (); 
-            try {
-                   FileOutputStream out = new FileOutputStream(save);
-                   copy.compress(Bitmap.CompressFormat.JPEG, 90, out);
-                   out.flush();
-                   out.close();
-            } catch (Exception e) {
-                   e.printStackTrace();
-            }
+            Log.i(TAG, "My Java circles");
+            break;
+    		
+    		/* Process static image from sd card.
+    		 *
+    		Bitmap copy = getImageFromSDCard("image.jpg");
+    		Utils.bitmapToMat(copy, thresholdImage);
+            MyHoughCircleTransformWithKnownRadius myHoughCircleTransformWithKnownRadius = new MyHoughCircleTransformWithKnownRadius(thresholdImage, 20, 180, 18);
+            myHoughCircleTransformWithKnownRadius.drawCircles(thresholdImage);
+            Utils.matToBitmap(thresholdImage, copy);
+            saveImageToSDCard(copy);
      
-        	Log.i(TAG, "Java circles:");
-            this.finish();*/
+        	Log.i(TAG, "Java circles");
+            this.finish();
+            */
         }
 
         return mRgba;
     }
 
-    public boolean onOptionsItemSelected(MenuItem item) {
+	private void saveImageToSDCard(Bitmap copy) {
+		String root = Environment.getExternalStorageDirectory().toString();
+        File myDir = new File(root + "/tmp");    
+        myDir.mkdirs();
+        Random generator = new Random();
+        int n = 10000;
+        n = generator.nextInt(n);
+        String fname = "Image-"+ n +".jpg";
+        File save = new File (myDir, fname);
+        Log.i("file", fname + " saved to: " + myDir);
+        if (save.exists ()) save.delete (); 
+        try {
+               FileOutputStream out = new FileOutputStream(save);
+               copy.compress(Bitmap.CompressFormat.JPEG, 90, out);
+               out.flush();
+               out.close();
+        } catch (Exception e) {
+               e.printStackTrace();
+        }
+	}
+
+	private Bitmap getImageFromSDCard(String name) {
+		File file = new File(Environment.getExternalStorageDirectory().toString() + "/" + name);
+		Bitmap image = BitmapFactory.decodeFile(file.getAbsolutePath());
+		Bitmap copy = image.copy(image.getConfig(), true);
+		return copy;
+	}
+
+	public boolean onOptionsItemSelected(MenuItem item) {
         Log.i(TAG, "called onOptionsItemSelected; selected item: " + item);
 
         if (item == mItemPreviewRGBA) {
@@ -399,8 +421,8 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
             mViewMode = VIEW_MODE_MY_JAVA_LINES;   
         } else if (item == mItemPreviewOpencvCircles) {
             mViewMode = VIEW_MODE_OPENCV_CIRCLES;
-        } else if (item == mItemPreviewJavaCircles) {
-            mViewMode = VIEW_MODE_JAVA_CIRCLES;
+        } else if (item == mItemPreviewMyJavaCircles) {
+            mViewMode = VIEW_MODE_MY_JAVA_CIRCLES;
         } else if (item == mItemLinesThreshold) {
             if (linesThreshold < 200){
             	linesThreshold += 20;
