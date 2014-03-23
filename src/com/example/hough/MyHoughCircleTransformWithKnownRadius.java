@@ -51,7 +51,7 @@ public class MyHoughCircleTransformWithKnownRadius {
 				if (houghSpace[y][x] > threshold){
 					Point center = new Point(x,y);
 					Core.circle(image, center, radius, new Scalar(255,0,0), 3);
-	                Core.circle(image, center, 3, new Scalar(0,255,0), 3);
+	                Core.circle(image, center, 1, new Scalar(0,255,0), 3);
 				}
 			}
 		}

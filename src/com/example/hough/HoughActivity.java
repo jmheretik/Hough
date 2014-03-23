@@ -336,7 +336,7 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
                          y = vec[1];
                   int radius = (int) vec[2];
                   Point center = new Point(x, y);
-                  Core.circle(mRgba, center, 3, new Scalar(0,255,0), 3);
+                  Core.circle(mRgba, center, 1, new Scalar(0,255,0), 3);
                   Core.circle(mRgba, center, radius, new Scalar(255,0,0), 3);
             }
             
@@ -351,11 +351,18 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
         	mGray = inputFrame.gray();
         	mGray.copyTo(thresholdImage);
         	Imgproc.adaptiveThreshold(thresholdImage, thresholdImage, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY, 3, -1);
-        	Imgproc.erode(thresholdImage, thresholdImage, Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(2,2)));
+        	//Imgproc.erode(thresholdImage, thresholdImage, Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(2,2)));
 
-            MyHoughCircleTransformWithKnownRadius myHoughCircleTransformWithKnownRadius = new MyHoughCircleTransformWithKnownRadius(thresholdImage, 20, 180, 30);
+            /*
+            MyHoughCircleTransformWithKnownRadius myHoughCircleTransformWithKnownRadius = new MyHoughCircleTransformWithKnownRadius(thresholdImage, 27, 180, 60);
             myHoughCircleTransformWithKnownRadius.drawCircles(mRgba);
+            */
+        	
             
+            MyHoughCircleTransformWithUnknownRadius myHoughCircleTransformWithUnknownRadius = new MyHoughCircleTransformWithUnknownRadius(thresholdImage, 27, 180, 50, 60, 5);
+            myHoughCircleTransformWithUnknownRadius.drawCircles(mRgba);
+            
+        	
             Log.i(TAG, "My Java circles");
             break;
     		
