@@ -5,7 +5,7 @@ import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 
-public class MyHoughLineTransform {
+public class HoughLines {
 
     private int width;
     private int height;
@@ -17,7 +17,7 @@ public class MyHoughLineTransform {
     private double[] sinuses;
     private double[] cosinuses;
 
-    public MyHoughLineTransform(Mat image, int threshold, int theta) {
+    public HoughLines(Mat image, int threshold, int theta) {
         width = image.cols();
         height = image.rows();
         this.theta = theta;

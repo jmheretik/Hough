@@ -5,20 +5,22 @@ import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 
-public class MyHoughCircleTransformWithKnownRadius {
+public class HoughCircles2D {
 
     private int width;
     private int height;
     private int radius;
+    private int distance;
     private int[][] houghSpace;
     private int threshold;
     private double[] sinuses;
     private double[] cosinuses;
 
-    public MyHoughCircleTransformWithKnownRadius(Mat image, int threshold, int theta, int radius) {
+    public HoughCircles2D(Mat image, int threshold, int theta, int radius, int distance) {
         width = image.cols();
         height = image.rows();
         this.radius = radius;
+        this.distance = distance;
         this.threshold = threshold;
         sinuses = new double[theta];
         cosinuses = new double[theta];
@@ -30,8 +32,8 @@ public class MyHoughCircleTransformWithKnownRadius {
 
         houghSpace = new int[height][width];
 
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width-distance; x++) {
+            for (int y = 0; y < height-distance; y++) {
                 double[] color = image.get(y, x);
                 if (color[0] != 0) {
                     for (int t = 0; t < theta; t++) {
@@ -53,6 +55,8 @@ public class MyHoughCircleTransformWithKnownRadius {
                     Point center = new Point(x, y);
                     Core.circle(image, center, radius, new Scalar(255, 0, 0), 3);
                     Core.circle(image, center, 1, new Scalar(0, 255, 0), 3);
+                    x += distance;
+                    y += distance;
                 }
             }
         }

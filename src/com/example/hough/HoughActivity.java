@@ -21,20 +21,21 @@ import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
 import org.opencv.imgproc.Imgproc;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.view.KeyEvent;
 import android.view.WindowManager;
-import android.widget.Toast;
 
 import com.example.hough.R;
 import com.example.hough.HoughLine;
 import com.example.hough.HoughLineTransform;
-import com.example.hough.MyHoughLineTransform;
+import com.example.hough.HoughLines;
 
 public class HoughActivity extends Activity implements CvCameraViewListener2 {
 
@@ -44,10 +45,13 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
     private static final int VIEW_MODE_GRAY = 1;
     private static final int VIEW_MODE_SEGMENT = 2;
     private static final int VIEW_MODE_OPENCV_LINES = 3;
-    private static final int VIEW_MODE_JAVA_LINES = 4;
-    private static final int VIEW_MODE_MY_JAVA_LINES = 5;
-    private static final int VIEW_MODE_OPENCV_CIRCLES = 6;
-    private static final int VIEW_MODE_MY_JAVA_CIRCLES = 7;
+    private static final int VIEW_MODE_OPENCV_LINE_SEGMENTS = 4;
+    private static final int VIEW_MODE_JAVA_LINES_OPTIMIZED = 5;
+    private static final int VIEW_MODE_JAVA_LINES_NAIVE = 6;
+    private static final int VIEW_MODE_OPENCV_CIRCLES = 7;
+    private static final int VIEW_MODE_JAVA_CIRCLES_NAIVE = 8;
+    private static final int SETTINGS = 9;
+    
 
     private int mViewMode;
     private Mat mRgba;
@@ -56,25 +60,17 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
     private Mat lines;
     private Mat circles;
     private Bitmap threshBitmap;
-    //private Bitmap				   mRgbaBitmap;
-
-    private MenuItem mItemPreviewRGBA;
-    private MenuItem mItemPreviewGray;
-    private MenuItem mItemPreviewSegment;
-    private MenuItem mItemPreviewOpencvLines;
-    private MenuItem mItemPreviewJavaLines;
-    private MenuItem mItemPreviewMyJavaLines;
-    private MenuItem mItemPreviewOpencvCircles;
-    private MenuItem mItemPreviewMyJavaCircles;
-    private MenuItem mItemLinesThreshold;
-    private MenuItem mItemOpencvMinLineSize;
-    private MenuItem mItemOpencvMaxLineGap;
+    //private Bitmap mRgbaBitmap;
 
     private CameraBridgeViewBase mOpenCvCameraView;
 
-    private int linesThreshold = 100;
-    private int opencvMinLineSize = 100;
-    private int opencvMaxLineGap = 10;
+    private int lineThresh = 100;
+    private int minLineSize = 100;
+    private int maxLineGap = 10;
+    private int minRadius = 10;
+    private int maxRadius = 60;
+    private int distanceRadius = 25;
+    private int circleTresh = 30;
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -107,28 +103,13 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         setContentView(R.layout.hough_surface_view);
+        
+        showUserSettings();
 
         mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.hough_activity_surface_view);
         mOpenCvCameraView.setCvCameraViewListener(this);
     }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        Log.i(TAG, "called onCreateOptionsMenu");
-        mItemPreviewRGBA = menu.add("RGBA");
-        mItemPreviewGray = menu.add("GRAY");
-        mItemPreviewSegment = menu.add("Segmentation");
-        mItemPreviewOpencvLines = menu.add("OpenCV lines");
-        mItemPreviewJavaLines = menu.add("Java lines");
-        mItemPreviewMyJavaLines = menu.add("My Java lines");
-        mItemPreviewOpencvCircles = menu.add("OpenCV circles");
-        mItemPreviewMyJavaCircles = menu.add("My Java circles");
-        mItemLinesThreshold = menu.add("Lines threshold");
-        mItemOpencvMinLineSize = menu.add("Min line size");
-        mItemOpencvMaxLineGap = menu.add("Max line gap");
-        return true;
-    }
-
+    
     @Override
     public void onPause() {
         super.onPause();
@@ -165,6 +146,41 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
         threshBitmap.recycle();
     }
 
+	@Override
+	public boolean onKeyUp(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_MENU) {
+			Intent i = new Intent(this, UserSettingActivity.class);
+            startActivityForResult(i, SETTINGS);
+	     }
+		return super.onKeyUp(keyCode, event);
+	}
+    
+    @Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		
+		switch (requestCode) {
+        case SETTINGS:
+            showUserSettings();
+            break;
+        }
+	}
+    
+    public void showUserSettings() {
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+ 
+        lineThresh = Integer.parseInt(sharedPrefs.getString("prefLineThresh", "100"));
+        minLineSize = Integer.parseInt(sharedPrefs.getString("prefLineMinSize", "100"));
+        maxLineGap = Integer.parseInt(sharedPrefs.getString("prefLineMaxGap", "10"));
+        
+        minRadius = Integer.parseInt(sharedPrefs.getString("prefMinRadius", "10"));
+        maxRadius = Integer.parseInt(sharedPrefs.getString("prefMaxRadius", "60"));
+        distanceRadius = Integer.parseInt(sharedPrefs.getString("prefDistanceRadius", "25"));
+        circleTresh = Integer.parseInt(sharedPrefs.getString("prefCircleThresh", "30"));
+        
+        mViewMode = Integer.parseInt(sharedPrefs.getString("prefMode", "0"));
+    }
+    
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
         final int viewMode = mViewMode;
         switch (viewMode) {
@@ -178,54 +194,23 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
                 break;
             case VIEW_MODE_SEGMENT:
                 mGray = inputFrame.gray();
-                mGray.submat(mGray.rows() / 2, mGray.rows(), 0, mGray.cols()).copyTo(thresholdImage.submat(thresholdImage.rows() / 2, thresholdImage.rows(), 0, thresholdImage.cols()));
-                Imgproc.adaptiveThreshold(thresholdImage, mRgba, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY, 3, -1);
-                mRgba.row(mRgba.rows() / 2).setTo(new Scalar(0));
+                
+                segmentation(mGray, thresholdImage);
+                
+                thresholdImage.copyTo(mRgba);
+                
+                Log.i(TAG, "Segmentation");
                 break;
             case VIEW_MODE_OPENCV_LINES:
                 //input frame has gray scale format		
                 lines = new Mat();
                 mRgba = inputFrame.rgba();				//15 fps
                 mGray = inputFrame.gray();
+                
+                segmentation(mGray, thresholdImage);
 
-                //dolna polovica obrazovky   			//15fps
-                mGray.submat(mGray.rows() / 2, mGray.rows(), 0, mGray.cols()).copyTo(thresholdImage.submat(thresholdImage.rows() / 2, thresholdImage.rows(), 0, thresholdImage.cols()));
-
-                //rozmazanie							//7 fps
-                //Imgproc.GaussianBlur(thresholdImage, thresholdImage, new Size(15,15), 0.5);
-                //odsegmentovanie						//10-12 fps
-                Imgproc.adaptiveThreshold(thresholdImage, thresholdImage, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY, 3, -1);
-        	//Imgproc.threshold(thresholdImage, mRgba, 100, 255, Imgproc.THRESH_BINARY);
-
-                //vymazanie bieleho riadka na hranici segmentacie	//10-11 fps
-                //thresholdImage.row(thresholdImage.rows()/2).setTo(new Scalar(0));
-                //vymazanie malych bodov 				//9 fps
-                Imgproc.erode(thresholdImage, thresholdImage, Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(2, 2)));
-
-        	//edge detection						//6 fps
-        	/*
-                 double mean = Core.mean(mGray).val[0];
-                 Imgproc.Canny(thresholdImage, mRgba, 0.66*mean, 1.33*mean);
-                 */
-        	//line segments detection					// 4-2 fps
-                /*Imgproc.HoughLinesP(thresholdImage, lines, 1, Math.PI/180, linesThreshold, opencvMinLineSize, opencvMaxLineGap);
-        	
-        	
-                 //line segment draw
-                 for (int i = 0; i < lines.cols(); i++)
-                 {
-                 double[] vec = lines.get(0, i);
-                 double x1 = vec[0],
-                 y1 = vec[1],
-                 x2 = vec[2],
-                 y2 = vec[3];
-                 Point start = new Point(x1, y1);
-                 Point end = new Point(x2, y2);
-         
-                 Core.line(mRgba, start, end, new Scalar(255,0,0), 3);
-                 }*/
                 //line detection	//3-2 fps
-                Imgproc.HoughLines(thresholdImage, lines, 1, Math.PI / 180, linesThreshold);
+                Imgproc.HoughLines(thresholdImage, lines, 1, Math.PI / 180, lineThresh);
 
                 //line draw
                 Mat tmp = new Mat(mRgba.rows(), mRgba.cols(), CvType.CV_8UC4);
@@ -255,13 +240,42 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
                 lines.release();
                 lines = null;
                 break;
-            case VIEW_MODE_JAVA_LINES:
+            case VIEW_MODE_OPENCV_LINE_SEGMENTS:
+                //input frame has gray scale format		
+                lines = new Mat();
+                mRgba = inputFrame.rgba();				//15 fps
+                mGray = inputFrame.gray();
+
+                segmentation(mGray, thresholdImage);
+                 
+                 //line segments detection					// 4-2 fps
+                 Imgproc.HoughLinesP(thresholdImage, lines, 1, Math.PI/180, lineThresh, minLineSize, maxLineGap);
+        	
+                 //line segment draw
+                 for (int i = 0; i < lines.cols(); i++)
+                 {
+                 double[] vec = lines.get(0, i);
+                 double x1 = vec[0],
+                 y1 = vec[1],
+                 x2 = vec[2],
+                 y2 = vec[3];
+                 Point start = new Point(x1, y1);
+                 Point end = new Point(x2, y2);
+         
+                 Core.line(mRgba, start, end, new Scalar(255,0,0), 3);
+                 }
+                
+                //cleanup
+                Log.i(TAG, "OpenCV line segments:" + lines.cols());
+                lines.release();
+                lines = null;
+                break;
+            case VIEW_MODE_JAVA_LINES_OPTIMIZED:
                 //input frame has gray scale format     	
                 mRgba = inputFrame.rgba();
                 mGray = inputFrame.gray();
-                mGray.submat(mGray.rows() / 2, mGray.rows(), 0, mGray.cols()).copyTo(thresholdImage.submat(thresholdImage.rows() / 2, thresholdImage.rows(), 0, thresholdImage.cols()));
-                Imgproc.adaptiveThreshold(thresholdImage, thresholdImage, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY, 3, -1);
-                Imgproc.erode(thresholdImage, thresholdImage, Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(2, 2)));
+                
+                segmentation(mGray, thresholdImage);
 
                 // 6 fps
                 //Utils.matToBitmap(mRgba, mRgbaBitmap);
@@ -274,7 +288,7 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
                 //1-2fps
                 houghLineTransform.addPoints(threshBitmap);
 
-                Vector<HoughLine> lines = houghLineTransform.getLines(linesThreshold);
+                Vector<HoughLine> lines = houghLineTransform.getLines(lineThresh);
 
                 for (int j = 0; j < lines.size(); j++) {
                     HoughLine line = lines.elementAt(j);
@@ -288,19 +302,17 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
                 lines.clear();
                 lines = null;
                 break;
-            case VIEW_MODE_MY_JAVA_LINES:
+            case VIEW_MODE_JAVA_LINES_NAIVE:
                 //input frame has gray scale format     	
                 mRgba = inputFrame.rgba();
                 mGray = inputFrame.gray();
-                mGray.submat(mGray.rows() / 2, mGray.rows(), 0, mGray.cols()).copyTo(thresholdImage.submat(thresholdImage.rows() / 2, thresholdImage.rows(), 0, thresholdImage.cols()));
-                Imgproc.adaptiveThreshold(thresholdImage, thresholdImage, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY, 3, -1);
-                Imgproc.erode(thresholdImage, thresholdImage, Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(2, 2)));
+                segmentation(mGray, thresholdImage);
 
-                MyHoughLineTransform myHoughLineTransform = new MyHoughLineTransform(thresholdImage, linesThreshold, 180);
+                HoughLines houghLines = new HoughLines(thresholdImage, lineThresh, 180);
 
                 Mat temp = new Mat(mRgba.rows(), mRgba.cols(), CvType.CV_8UC4);
                 mRgba.copyTo(temp);
-                myHoughLineTransform.drawLines(temp);
+                houghLines.drawLines(temp);
                 temp.submat(temp.rows() / 2, temp.rows(), 0, temp.cols()).copyTo(mRgba.submat(mRgba.rows() / 2, mRgba.rows(), 0, mRgba.cols()));
 
                 //cleanup
@@ -317,11 +329,8 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
                 //rozmazanie							
                 Imgproc.GaussianBlur(mGray, mGray, new Size(15, 15), 0.5);
 
-                //odsegmentovanie						
-                //Imgproc.adaptiveThreshold(thresholdImage, thresholdImage, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY, 3, -1);
-                //Imgproc.threshold(thresholdImage, mRgba, 100, 255, Imgproc.THRESH_BINARY);
                 //circle detection
-                Imgproc.HoughCircles(mGray, circles, Imgproc.CV_HOUGH_GRADIENT, 1, 50);
+                Imgproc.HoughCircles(mGray, circles, Imgproc.CV_HOUGH_GRADIENT, 1, distanceRadius);
 
                 //circles draw
                 for (int i = 0; i < circles.cols(); i++) {
@@ -339,24 +348,24 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
                 circles.release();
                 circles = null;
                 break;
-            case VIEW_MODE_MY_JAVA_CIRCLES:
+            case VIEW_MODE_JAVA_CIRCLES_NAIVE:
                 //input frame has gray scale format     	
                 mRgba = inputFrame.rgba();
                 mGray = inputFrame.gray();
                 mGray.copyTo(thresholdImage);
                 Imgproc.adaptiveThreshold(thresholdImage, thresholdImage, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY, 3, -1);
-                //Imgproc.erode(thresholdImage, thresholdImage, Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(2,2)));
 
-                /*
-                 MyHoughCircleTransformWithKnownRadius myHoughCircleTransformWithKnownRadius = new MyHoughCircleTransformWithKnownRadius(thresholdImage, 27, 180, 40);
-                 myHoughCircleTransformWithKnownRadius.drawCircles(mRgba);
-                 */
-                MyHoughCircleTransformWithUnknownRadius myHoughCircleTransformWithUnknownRadius = new MyHoughCircleTransformWithUnknownRadius(thresholdImage, 27, 180, 35, 45, 5);
-                myHoughCircleTransformWithUnknownRadius.drawCircles(mRgba);
-
+                if (minRadius == maxRadius){
+	                HoughCircles2D houghCircles2D = new HoughCircles2D(thresholdImage, circleTresh, 180, minRadius, distanceRadius);
+	                houghCircles2D.drawCircles(mRgba);
+                } else {
+	                HoughCircles3D houghCircles3D = new HoughCircles3D(thresholdImage, circleTresh, 180, minRadius, maxRadius, distanceRadius);
+	                houghCircles3D.drawCircles(mRgba);
+                }
+                
                 Log.i(TAG, "My Java circles");
                 break;
-
+                
                 /* Process static image from sd card.
                  *
                  Bitmap copy = getImageFromSDCard("image.jpg");
@@ -374,7 +383,31 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
         return mRgba;
     }
 
-    private void saveImageToSDCard(Bitmap copy) {
+    private void segmentation(Mat input, Mat output) {
+    	//dolna polovica obrazovky   			//15fps
+        input.submat(input.rows() / 2, input.rows(), 0, input.cols()).copyTo(output.submat(output.rows() / 2, output.rows(), 0, output.cols()));
+
+        //rozmazanie							//7 fps
+        //Imgproc.GaussianBlur(output, output, new Size(15,15), 0.5);
+        
+        //odsegmentovanie						//10-12 fps
+        Imgproc.adaptiveThreshold(output, output, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY, 3, -0.5);
+	    //Imgproc.threshold(output, output, 100, 255, Imgproc.THRESH_BINARY);
+
+        //vymazanie bieleho riadka na hranici segmentacie	//10-11 fps
+        //thresholdImage.row(output.rows()/2).setTo(new Scalar(0));
+        
+        //vymazanie malych bodov 				//9 fps
+        Imgproc.erode(output, output, Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(2, 2)));
+
+         /*
+         //edge detection						//6 fps
+         double mean = Core.mean(input).val[0];
+         Imgproc.Canny(output, output, 0.66*mean, 1.33*mean);
+         */
+	}
+
+	private void saveImageToSDCard(Bitmap copy) {
         String root = Environment.getExternalStorageDirectory().toString();
         File myDir = new File(root + "/tmp");
         myDir.mkdirs();
@@ -403,53 +436,4 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
         Bitmap copy = image.copy(image.getConfig(), true);
         return copy;
     }
-
-    public boolean onOptionsItemSelected(MenuItem item) {
-        Log.i(TAG, "called onOptionsItemSelected; selected item: " + item);
-
-        if (item == mItemPreviewRGBA) {
-            mViewMode = VIEW_MODE_RGBA;
-        } else if (item == mItemPreviewGray) {
-            mViewMode = VIEW_MODE_GRAY;
-        } else if (item == mItemPreviewSegment) {
-            mViewMode = VIEW_MODE_SEGMENT;
-        } else if (item == mItemPreviewOpencvLines) {
-            mViewMode = VIEW_MODE_OPENCV_LINES;
-        } else if (item == mItemPreviewJavaLines) {
-            mViewMode = VIEW_MODE_JAVA_LINES;
-        } else if (item == mItemPreviewMyJavaLines) {
-            mViewMode = VIEW_MODE_MY_JAVA_LINES;
-        } else if (item == mItemPreviewOpencvCircles) {
-            mViewMode = VIEW_MODE_OPENCV_CIRCLES;
-        } else if (item == mItemPreviewMyJavaCircles) {
-            mViewMode = VIEW_MODE_MY_JAVA_CIRCLES;
-        } else if (item == mItemLinesThreshold) {
-            if (linesThreshold < 200) {
-                linesThreshold += 20;
-            } else {
-                linesThreshold = 20;
-            }
-            Toast.makeText(HoughActivity.this, "threshold: " + linesThreshold,
-                    Toast.LENGTH_SHORT).show();
-        } else if (item == mItemOpencvMinLineSize) {
-            if (opencvMinLineSize < 200) {
-                opencvMinLineSize += 20;
-            } else {
-                opencvMinLineSize = 20;
-            }
-            Toast.makeText(HoughActivity.this, "minLineSize: " + opencvMinLineSize,
-                    Toast.LENGTH_SHORT).show();
-        } else if (item == mItemOpencvMaxLineGap) {
-            if (opencvMaxLineGap < 200) {
-                opencvMaxLineGap += 20;
-            } else {
-                opencvMaxLineGap = 20;
-            }
-            Toast.makeText(HoughActivity.this, "maxLineGap: " + opencvMaxLineGap,
-                    Toast.LENGTH_SHORT).show();
-        }
-
-        return true;
-    }
-
 }

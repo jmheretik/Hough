@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="modes">
+        <item name="0">RGBA</item>
+        <item name="1">GRAY</item>
+        <item name="2">Segmentation</item>
+        <item name="3">Lines - OpenCV</item>
+        <item name="4">Line segments - OpenCV</item>
+        <item name="5">Lines - Java optimized</item>
+        <item name="6">Lines - Java naive</item>
+        <item name="7">Circles - OpenCV</item>
+        <item name="8">Circles - Java naive</item>
+    </string-array>
+    <string-array name="modeValues">
+        <item name="0">0</item>
+        <item name="1">1</item>
+        <item name="2">2</item>
+        <item name="3">3</item>
+        <item name="4">4</item>
+        <item name="5">5</item>
+        <item name="6">6</item>
+        <item name="7">7</item>
+        <item name="8">8</item>
+    </string-array>
+     
+</resources>

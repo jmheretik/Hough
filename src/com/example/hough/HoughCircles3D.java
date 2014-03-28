@@ -5,24 +5,26 @@ import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 
-public class MyHoughCircleTransformWithUnknownRadius {
+public class HoughCircles3D {
 
     private int width;
     private int height;
     private int minRadius;
     private int maxRadius;
+    private int distance;
     private int stepRadius;
     private int[][][] houghSpace;
     private int threshold;
     private double[] sinuses;
     private double[] cosinuses;
 
-    public MyHoughCircleTransformWithUnknownRadius(Mat image, int threshold, int theta, int minRadius, int maxRadius, int stepRadius) {
+    public HoughCircles3D(Mat image, int threshold, int theta, int minRadius, int maxRadius, int distance) {
         width = image.cols();
         height = image.rows();
         this.minRadius = minRadius;
         this.maxRadius = maxRadius;
-        this.stepRadius = stepRadius;
+        this.distance = distance;
+        this.stepRadius = 10;
         this.threshold = threshold;
         sinuses = new double[theta];
         cosinuses = new double[theta];
@@ -53,13 +55,15 @@ public class MyHoughCircleTransformWithUnknownRadius {
     }
 
     public void drawCircles(Mat image) {
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width-distance; x++) {
+            for (int y = 0; y < height-distance; y++) {
                 for (int r = minRadius; r < maxRadius; r = r + stepRadius) {
                     if (houghSpace[y][x][r] > threshold) {
                         Point center = new Point(x, y);
                         Core.circle(image, center, r, new Scalar(255, 0, 0), 3);
                         Core.circle(image, center, 3, new Scalar(0, 255, 0), 3);
+                        x += distance;
+                        y += distance;
                     }
                 }
             }

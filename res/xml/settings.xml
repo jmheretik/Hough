@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+ 
+    <PreferenceCategory android:title="@string/pref_mode" >
+        <ListPreference
+                android:title="@string/pref_mode_name"
+                android:summary="@string/pref_mode_summary"
+                android:defaultValue="0"
+                android:entries="@array/modes"
+                android:entryValues="@array/modeValues"
+                android:key="prefMode"/>
+    </PreferenceCategory>
+     
+    <PreferenceCategory android:title="@string/pref_line_parameters" >
+        <EditTextPreference
+                android:title="@string/pref_param_line_thresh"
+                android:inputType="number" 
+                android:summary="@string/pref_param_line_thresh_summary"
+                android:key="prefLineThresh"/>
+ 		<EditTextPreference
+                android:title="@string/pref_param_line_min_size"
+                android:inputType="number" 
+                android:summary="@string/pref_param_line_min_size_summary"
+                android:key="prefLineMinSize"/>
+        <EditTextPreference
+                android:title="@string/pref_param_line_max_gap"
+                android:inputType="number" 
+                android:summary="@string/pref_param_line_max_gap_summary"
+                android:key="prefLineMaxGap"/>
+    </PreferenceCategory>
+    
+    <PreferenceCategory android:title="@string/pref_circle_parameters" >
+        <EditTextPreference
+                android:title="@string/pref_param_circle_thresh"
+                android:inputType="number" 
+                android:summary="@string/pref_param_circle_thresh_summary"
+                android:key="prefCircleThresh"/>
+        <EditTextPreference
+                android:title="@string/pref_param_min_radius"
+                android:inputType="number" 
+                android:summary="@string/pref_param_min_radius_summary"
+                android:key="prefMinRadius"/>
+        <EditTextPreference
+                android:title="@string/pref_param_max_radius"
+                android:inputType="number" 
+                android:summary="@string/pref_param_max_radius_summary"
+                android:key="prefMaxRadius"/>
+        <EditTextPreference
+                android:title="@string/pref_param_distance_radius"
+                android:inputType="number" 
+                android:summary="@string/pref_param_distance_radius_summary"
+                android:key="prefDistanceRadius"/>
+    </PreferenceCategory>
+ 
+</PreferenceScreen>
