@@ -52,7 +52,6 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
     private static final int VIEW_MODE_JAVA_CIRCLES_NAIVE = 8;
     private static final int SETTINGS = 9;
     
-
     private int mViewMode;
     private Mat mRgba;
     private Mat mGray;
@@ -67,8 +66,8 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
     private int lineThresh = 100;
     private int minLineSize = 100;
     private int maxLineGap = 10;
-    private int minRadius = 10;
-    private int maxRadius = 60;
+    private int minRadius = 40;
+    private int maxRadius = 40;
     private int distanceRadius = 25;
     private int circleTresh = 30;
 
@@ -167,14 +166,14 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
 	}
     
     public void showUserSettings() {
-        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
- 
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);  
+        
         lineThresh = Integer.parseInt(sharedPrefs.getString("prefLineThresh", "100"));
         minLineSize = Integer.parseInt(sharedPrefs.getString("prefLineMinSize", "100"));
         maxLineGap = Integer.parseInt(sharedPrefs.getString("prefLineMaxGap", "10"));
         
-        minRadius = Integer.parseInt(sharedPrefs.getString("prefMinRadius", "10"));
-        maxRadius = Integer.parseInt(sharedPrefs.getString("prefMaxRadius", "60"));
+        minRadius = Integer.parseInt(sharedPrefs.getString("prefMinRadius", "40"));
+        maxRadius = Integer.parseInt(sharedPrefs.getString("prefMaxRadius", "40"));
         distanceRadius = Integer.parseInt(sharedPrefs.getString("prefDistanceRadius", "25"));
         circleTresh = Integer.parseInt(sharedPrefs.getString("prefCircleThresh", "30"));
         

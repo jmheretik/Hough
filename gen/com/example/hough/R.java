@@ -48,8 +48,7 @@ containing a value of this type.
         public static final int back=0x7f050001;
         public static final int front=0x7f050002;
         public static final int hough_activity_surface_view=0x7f050003;
-        public static final int menu_settings=0x7f050005;
-        public static final int textUserSettings=0x7f050004;
+        public static final int menu_settings=0x7f050004;
     }
     public static final class layout {
         public static final int hough_surface_view=0x7f030000;
@@ -79,6 +78,11 @@ containing a value of this type.
         public static final int pref_param_max_radius_summary=0x7f07000e;
         public static final int pref_param_min_radius=0x7f07000b;
         public static final int pref_param_min_radius_summary=0x7f07000c;
+        public static final int pref_reset=0x7f070016;
+        public static final int pref_reset_message=0x7f070018;
+        public static final int pref_reset_negative=0x7f07001a;
+        public static final int pref_reset_positive=0x7f070019;
+        public static final int pref_reset_title=0x7f070017;
         public static final int title_activity_main=0x7f070002;
     }
     public static final class xml {

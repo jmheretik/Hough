@@ -5,17 +5,17 @@
     <string name="title_activity_main">MainActivity</string>
  
  	<string name="pref_param_line_thresh">Line threshold</string>
-    <string name="pref_param_line_thresh_summary">How many votes in hough space needed for line</string>
+    <string name="pref_param_line_thresh_summary">How many votes in hough space should indicate line</string>
  	<string name="pref_param_circle_thresh">Circle threshold</string>
-    <string name="pref_param_circle_thresh_summary">How many votes in hough space needed for circle</string>
+    <string name="pref_param_circle_thresh_summary">How many votes in hough space should indicate circle</string>
  	<string name="pref_param_line_max_gap">Line gap</string>
     <string name="pref_param_line_max_gap_summary">Maximum length of gap between line segments</string>
     <string name="pref_param_line_min_size">Line size</string>
     <string name="pref_param_line_min_size_summary">Minimum line segment length</string> 
     <string name="pref_param_min_radius">Smallest radius</string>
-    <string name="pref_param_min_radius_summary">Smallest radius of circle to detect</string>
+    <string name="pref_param_min_radius_summary">Smallest radius of circles to detect (if same as biggest - 2D hough space will be used which leads to better performance)</string>
     <string name="pref_param_max_radius">Biggest radius</string>
-    <string name="pref_param_max_radius_summary">Biggest radius of circle to detect</string>
+    <string name="pref_param_max_radius_summary">Biggest radius of circles to detect (if same as smallest - 2D hough space will be used which leads to better performance)</string>
     <string name="pref_param_distance_radius">Radiuses distance</string>
     <string name="pref_param_distance_radius_summary">Minimum distance between radiuses of circles</string>
     
@@ -25,4 +25,9 @@
     <string name="pref_mode">Image processing</string>
     <string name="pref_line_parameters">Parameters for line detection</string>
     <string name="pref_circle_parameters">Parameters for circle detection</string>
+    <string name="pref_reset">Reset</string>
+    <string name="pref_reset_title">Reset all settings</string>
+    <string name="pref_reset_message">Do you really want to reset all settings?</string>
+    <string name="pref_reset_positive">Yes</string>
+    <string name="pref_reset_negative">Cancel</string>
 </resources>

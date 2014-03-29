@@ -10,10 +10,4 @@
         android:id="@+id/hough_activity_surface_view"
         opencv:show_fps="true" />
 	
-	 <TextView
-        android:id="@+id/textUserSettings"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        tools:context=".HoughActivity" />
-	
 </LinearLayout>
