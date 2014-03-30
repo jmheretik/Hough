@@ -61,9 +61,9 @@ containing a value of this type.
         public static final int menu_settings=0x7f070001;
         public static final int pref_circle_parameters=0x7f070015;
         public static final int pref_line_parameters=0x7f070014;
-        public static final int pref_mode=0x7f070013;
-        public static final int pref_mode_name=0x7f070011;
-        public static final int pref_mode_summary=0x7f070012;
+        public static final int pref_mode=0x7f070011;
+        public static final int pref_mode_name=0x7f070012;
+        public static final int pref_mode_summary=0x7f070013;
         public static final int pref_param_circle_thresh=0x7f070005;
         public static final int pref_param_circle_thresh_summary=0x7f070006;
         public static final int pref_param_distance_radius=0x7f07000f;
