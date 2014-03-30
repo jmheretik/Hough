@@ -150,7 +150,8 @@ public class HoughLineTransform {
      * Adds points from an image (in OpenCV's org.opencv.core.Mat format). The
      * image is assumed to be greyscale black and white, so all pixels that are
      * not black are counted as edges. The image should have the same dimensions
-     * as the one passed to the constructor.
+     * as the one passed to the constructor, but only bottom half of the image
+     * should contain edges.
      *
      * @author Jakub Medvecký-Heretik
      */
@@ -158,7 +159,7 @@ public class HoughLineTransform {
 
         // Now find edge points and update the hough array 
         for (int x = 0; x < image.cols(); x++) {
-            for (int y = 0; y < image.rows(); y++) {
+            for (int y = image.rows() / 2; y < image.rows(); y++) {
 
                 // Find non-black pixels
                 double[] color = image.get(y, x);

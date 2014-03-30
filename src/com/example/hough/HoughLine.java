@@ -7,8 +7,8 @@ import android.graphics.Bitmap;
 /**
  * Represents a linear line as detected by the hough transform. This line is
  * represented by an angle theta and a radius from the centre.
- * 
-* @author Olly Oechsle, University of Essex, Date: 13-Mar-2008, Jakub
+ *
+ * @author Olly Oechsle, University of Essex, Date: 13-Mar-2008, Jakub
  * Medvecký-Heretik
  * @version 1.0
  */
@@ -47,7 +47,7 @@ public class HoughLine {
 
         if (theta < Math.PI * 0.25 || theta > Math.PI * 0.75) {
             // Draw vertical-ish lines 
-            for (int y = height / 2 + 1; y < height - 1; y++) {
+            for (int y = 1; y < height - 1; y++) {
                 int x = (int) ((((r - houghHeight) - ((y - centerY) * tsin)) / tcos) + centerX);
                 if (x < width - 1 && x >= 1) {
                     image.setPixel(x + 1, y, color);
@@ -61,7 +61,7 @@ public class HoughLine {
             // Draw horizontal-ish lines 
             for (int x = 1; x < width - 1; x++) {
                 int y = (int) ((((r - houghHeight) - ((x - centerX) * tcos)) / tsin) + centerY);
-                if (y < height - 1 && y >= height / 2 + 1) {
+                if (y < height - 1 && y >= 1) {
                     image.setPixel(x + 1, y, color);
                     image.setPixel(x - 1, y, color);
                     image.setPixel(x, y, color);
@@ -92,7 +92,7 @@ public class HoughLine {
         double tcos = Math.cos(theta);
 
         if (theta < Math.PI * 0.25 || theta > Math.PI * 0.75) {
-            for (int y = height / 2; y < height; y++) {
+            for (int y = 0; y < height; y++) {
                 int x = (int) ((((r - houghHeight) - ((y - centerY) * tsin)) / tcos) + centerX);
                 if (x < width && x >= 0) {
                     image.put(y + 1, x, new double[]{255, 0, 0, 0});
@@ -105,7 +105,7 @@ public class HoughLine {
         } else {
             for (int x = 0; x < width; x++) {
                 int y = (int) ((((r - houghHeight) - ((x - centerX) * tcos)) / tsin) + centerY);
-                if (y < height && y >= height / 2) {
+                if (y < height && y >= 0) {
                     image.put(y + 1, x, new double[]{255, 0, 0, 0});
                     image.put(y - 1, x, new double[]{255, 0, 0, 0});
                     image.put(y, x, new double[]{255, 0, 0, 0});

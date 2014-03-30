@@ -3,79 +3,79 @@
  
     <PreferenceCategory android:title="@string/pref_mode" >
         <ListPreference
-                android:title="@string/pref_mode_name"
-                android:summary="@string/pref_mode_summary"
-                android:defaultValue="0"
-                android:persistent="true"
-                android:entries="@array/modes"
-                android:entryValues="@array/modeValues"
-                android:key="prefMode"/>
+            android:title="@string/pref_mode_name"
+            android:summary="@string/pref_mode_summary"
+            android:defaultValue="0"
+            android:persistent="true"
+            android:entries="@array/modes"
+            android:entryValues="@array/modeValues"
+            android:key="prefMode"/>
     </PreferenceCategory>
      
     <PreferenceCategory android:title="@string/pref_line_parameters" >
         <EditTextPreference
-                android:title="@string/pref_param_line_thresh"
-                android:dialogMessage="@string/pref_param_line_thresh_summary"
-                android:inputType="number" 
-                android:defaultValue="100"
-                android:persistent="true"
-                android:key="prefLineThresh"/>
- 		<EditTextPreference
-                android:title="@string/pref_param_line_min_size"
-                android:inputType="number" 
-                android:defaultValue="100"
-                android:persistent="true"
-                android:dialogMessage="@string/pref_param_line_min_size_summary"
-                android:key="prefLineMinSize"/>
+            android:title="@string/pref_param_line_thresh"
+            android:dialogMessage="@string/pref_param_line_thresh_summary"
+            android:inputType="number" 
+            android:defaultValue="100"
+            android:persistent="true"
+            android:key="prefLineThresh"/>
         <EditTextPreference
-                android:title="@string/pref_param_line_max_gap"
-                android:inputType="number" 
-                android:defaultValue="10"
-                android:persistent="true"
-                android:dialogMessage="@string/pref_param_line_max_gap_summary"
-                android:key="prefLineMaxGap"/>
+            android:title="@string/pref_param_line_min_size"
+            android:inputType="number" 
+            android:defaultValue="100"
+            android:persistent="true"
+            android:dialogMessage="@string/pref_param_line_min_size_summary"
+            android:key="prefLineMinSize"/>
+        <EditTextPreference
+            android:title="@string/pref_param_line_max_gap"
+            android:inputType="number" 
+            android:defaultValue="100"
+            android:persistent="true"
+            android:dialogMessage="@string/pref_param_line_max_gap_summary"
+            android:key="prefLineMaxGap"/>
     </PreferenceCategory>
     
     <PreferenceCategory android:title="@string/pref_circle_parameters" >
         <EditTextPreference
-                android:title="@string/pref_param_circle_thresh"
-                android:inputType="number" 
-                android:defaultValue="30"
-                android:persistent="true"
-                android:dialogMessage="@string/pref_param_circle_thresh_summary"
-                android:key="prefCircleThresh"/>
+            android:title="@string/pref_param_circle_thresh"
+            android:inputType="number" 
+            android:defaultValue="45"
+            android:persistent="true"
+            android:dialogMessage="@string/pref_param_circle_thresh_summary"
+            android:key="prefCircleThresh"/>
         <EditTextPreference
-                android:title="@string/pref_param_min_radius"
-                android:inputType="number" 
-                android:defaultValue="40"
-                android:persistent="true"
-                android:dialogMessage="@string/pref_param_min_radius_summary"
-                android:key="prefMinRadius"/>
+            android:title="@string/pref_param_min_radius"
+            android:inputType="number" 
+            android:defaultValue="40"
+            android:persistent="true"
+            android:dialogMessage="@string/pref_param_min_radius_summary"
+            android:key="prefMinRadius"/>
         <EditTextPreference
-                android:title="@string/pref_param_max_radius"
-                android:inputType="number" 
-                android:defaultValue="40"
-                android:persistent="true"
-                android:dialogMessage="@string/pref_param_max_radius_summary"
-                android:key="prefMaxRadius"/>
+            android:title="@string/pref_param_max_radius"
+            android:inputType="number" 
+            android:defaultValue="40"
+            android:persistent="true"
+            android:dialogMessage="@string/pref_param_max_radius_summary"
+            android:key="prefMaxRadius"/>
         <EditTextPreference
-                android:title="@string/pref_param_distance_radius"
-                android:inputType="number" 
-                android:defaultValue="25"
-                android:persistent="true"
-                android:dialogMessage="@string/pref_param_distance_radius_summary"
-                android:key="prefDistanceRadius"/>
+            android:title="@string/pref_param_distance_radius"
+            android:inputType="number" 
+            android:defaultValue="25"
+            android:persistent="true"
+            android:dialogMessage="@string/pref_param_distance_radius_summary"
+            android:key="prefDistanceRadius"/>
     </PreferenceCategory>
     
     <PreferenceCategory android:title="@string/pref_reset" >
-    	<com.example.hough.ResetDialogPreference
-    			android:title="@string/pref_reset_title"
-                android:dialogTitle="@string/pref_reset_title"
-                android:dialogMessage="@string/pref_reset_message" 
-                android:negativeButtonText="@string/pref_reset_negative"
-                android:positiveButtonText="@string/pref_reset_positive"
-                android:key="prefReset"
-                android:persistent="false"/>
+        <com.example.hough.ResetDialogPreference
+            android:title="@string/pref_reset_title"
+            android:dialogTitle="@string/pref_reset_title"
+            android:dialogMessage="@string/pref_reset_message" 
+            android:negativeButtonText="@string/pref_reset_negative"
+            android:positiveButtonText="@string/pref_reset_positive"
+            android:key="prefReset"
+            android:persistent="false"/>
     </PreferenceCategory>
  
 </PreferenceScreen>
