@@ -349,6 +349,15 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
     }
 
     /**
+	 * Lower threshold for portrait orientation 
+	 * 
+	 * @return lineThresh
+	 */
+	private int getLineThreshold() {
+	    return (orientation == 1) ? lineThresh : lineThresh - lineThresh / 3;
+	}
+
+	/**
      * Image segmentation and edge detection
      *
      * @param grey greyscale image
@@ -356,11 +365,13 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
      */
     private void segmentation() {
 
-        //Bottom half of image                                              //15fps
+        //Bottom half of landscape image                                 //15fps
         if (orientation == 1) {
-            mGray.submat(mGray.rows() / 2, mGray.rows(), 0, mGray.cols()).copyTo(mEdges.submat(mEdges.rows() / 2, mEdges.rows(), 0, mEdges.cols()));
-        } else {
-            mGray.submat(0, mGray.rows(), mGray.cols() / 2, mGray.cols()).copyTo(mEdges.submat(0, mEdges.rows(), mEdges.cols() / 2, mEdges.cols()));
+            mGray.submat(mGray.rows() / 2, mGray.rows(), mGray.cols()/5, (4*mGray.cols())/5).copyTo(mEdges.submat(mEdges.rows() / 2, mEdges.rows(), mEdges.cols()/5, (4*mEdges.cols())/5));
+        } 
+        //Bottom third of portrait image
+        else {
+            mGray.submat(0, mGray.rows(), (2*mGray.cols())/3, mGray.cols()).copyTo(mEdges.submat(0, mEdges.rows(), (2*mEdges.cols())/3, mEdges.cols()));
         }
 
 	//Gaussian blur                                                     //7 fps
@@ -383,7 +394,22 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
         //Imgproc.Canny(mEdges, mEdges, 0.66*mean, 1.33*mean);
     }
 
-    private void openCVLines() {
+    /**
+     * Draw lines to output image from temporary matrix
+     * 
+     * @param tmp
+     */
+    private void drawToMRgba(Mat tmp) {
+    	if (orientation == 1) {
+        	Core.line(mRgba, new Point(0, mRgba.rows()/2 - 1), new Point(mRgba.cols(), mRgba.rows()/2 - 1), new Scalar(0, 255, 0), 1);
+            if (tmp != null) tmp.submat(tmp.rows()/2, tmp.rows(), 0, tmp.cols()).copyTo(mRgba.submat(mRgba.rows()/2, mRgba.rows(), 0, mRgba.cols()));
+        } else {
+        	Core.line(mRgba, new Point((2*mRgba.cols())/3 - 1,  0), new Point((2*mRgba.cols())/3 - 1,  mRgba.rows()), new Scalar(0, 255, 0), 1);
+        	if (tmp != null) tmp.submat(0, tmp.rows(), (2*tmp.cols())/3, tmp.cols()).copyTo(mRgba.submat(0, mRgba.rows(), (2*mRgba.cols())/3, mRgba.cols()));
+        }
+	}
+
+	private void openCVLines() {
 
         //Matrix of detected lines
         lines = new Mat();
@@ -394,7 +420,7 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
         //Draw straight lines to temporary matrix
         Mat tmp = new Mat(mRgba.rows(), mRgba.cols(), CvType.CV_8UC4);
         mRgba.copyTo(tmp);
-
+        
         //Get rho and theta values for every line and convert it to cartesian space
         for (int j = 0; j < lines.cols(); j++) {
             double[] vec = lines.get(0, j);
@@ -416,13 +442,8 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
             //Draw the line
             Core.line(tmp, start, end, new Scalar(255, 0, 0), 3);
         }
-
-        //Draw lines to output image from temporary matrix
-        if (orientation == 1) {
-            tmp.submat(tmp.rows() / 2, tmp.rows(), 0, tmp.cols()).copyTo(mRgba.submat(mRgba.rows() / 2, mRgba.rows(), 0, mRgba.cols()));
-        } else {
-            tmp.submat(0, tmp.rows(), tmp.cols() / 2, tmp.cols()).copyTo(mRgba.submat(0, mRgba.rows(), mRgba.cols() / 2, mRgba.cols()));
-        }
+        
+        drawToMRgba(tmp);
 
         //Cleanup
         Log.i(TAG, "lines:" + lines.cols());
@@ -453,6 +474,8 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
 
             Core.line(mRgba, start, end, new Scalar(255, 0, 0), 3);
         }
+        
+        drawToMRgba(null);
 
         //Cleanup
         Log.i(TAG, "lines:" + lines.cols());
@@ -498,11 +521,7 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
             line.draw(tmp);
         }
 
-        if (orientation == 1) {
-            tmp.submat(tmp.rows() / 2, tmp.rows(), 0, tmp.cols()).copyTo(mRgba.submat(mRgba.rows() / 2, mRgba.rows(), 0, mRgba.cols()));
-        } else {
-            tmp.submat(0, tmp.rows(), tmp.cols() / 2, tmp.cols()).copyTo(mRgba.submat(0, mRgba.rows(), tmp.cols() / 2, mRgba.cols()));
-        }
+        drawToMRgba(tmp);
 
         //Cleanup
         Log.i(TAG, "lines:" + lines.size());
@@ -521,11 +540,8 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
         Mat tmp = new Mat(mRgba.rows(), mRgba.cols(), CvType.CV_8UC4);
         mRgba.copyTo(tmp);
         houghLines.drawLines(tmp);
-        if (orientation == 1) {
-            tmp.submat(tmp.rows() / 2, tmp.rows(), 0, tmp.cols()).copyTo(mRgba.submat(mRgba.rows() / 2, mRgba.rows(), 0, mRgba.cols()));
-        } else {
-            tmp.submat(0, tmp.rows(), tmp.cols() / 2, tmp.cols()).copyTo(mRgba.submat(0, mRgba.rows(), tmp.cols() / 2, mRgba.cols()));
-        }
+        
+        drawToMRgba(tmp);
 
         //cleanup
         tmp.release();
@@ -641,15 +657,6 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
         }
 
         Log.i("file", fname + " saved to: " + myDir);
-    }
-
-    /**
-     * Lower threshold for portrait orientation 
-     * 
-     * @return lineThresh
-     */
-    private int getLineThreshold() {
-        return (orientation == 1) ? lineThresh : lineThresh / 2;
     }
 
     @Override
