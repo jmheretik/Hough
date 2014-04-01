@@ -87,6 +87,8 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
     private Mat circles;
     private Bitmap edgeBitmap;
     //private Bitmap mRgbaBitmap;
+    private int height;
+    private int width;
 
     private CameraBridgeViewBase mOpenCvCameraView;
 
@@ -109,6 +111,22 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
     //How many votes in hough space should indicate circle
     private int circleTresh;
 
+    private Point leftStart;
+    private Point leftEnd;
+    private Point rightStart;
+    private Point rightEnd;
+    
+    private double midX;
+    private double minX;
+    private double maxX;
+    
+    private double minLeftY;
+    private double minRightY;
+    private double maxY;
+    
+    private boolean isLeftHorizontal;
+    private boolean isRightHorizontal;
+    
     /**
      * Load OpenCV Manager
      */
@@ -133,7 +151,7 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
      * Initialize default parameters
      */
     public HoughActivity() {
-        lineThresh = 100;
+        lineThresh = 80;
         minLineSize = 100;
         maxLineGap = 100;
         minRadius = 40;
@@ -192,11 +210,29 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
      * @param height
      */
     public void onCameraViewStarted(int width, int height) {
+    	this.width = width;
+    	this.height = height;
         mRgba = new Mat(height, width, CvType.CV_8UC4);
         mGray = new Mat(height, width, CvType.CV_8UC1);
         mEdges = new Mat(height, width, CvType.CV_8UC1);
         edgeBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
         //mRgbaBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+        
+        leftStart = new Point(0, height);
+        leftEnd = new Point(width, 0);
+        rightStart = new Point(width, height);
+        rightEnd = new Point(0, 0);
+        
+        midX = width/2;
+        minX = 0;
+        maxX = width;
+        
+        minLeftY = 3*height/4;
+        minRightY = 3*height/4;
+        maxY = height;
+        
+        isLeftHorizontal = true;
+        isRightHorizontal = true;
     }
 
     /**
@@ -231,7 +267,7 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
     public void showUserSettings() {
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-        lineThresh = Integer.parseInt(sharedPrefs.getString("prefLineThresh", "100"));
+        lineThresh = Integer.parseInt(sharedPrefs.getString("prefLineThresh", "80"));
         minLineSize = Integer.parseInt(sharedPrefs.getString("prefLineMinSize", "100"));
         maxLineGap = Integer.parseInt(sharedPrefs.getString("prefLineMaxGap", "100"));
 
@@ -280,8 +316,9 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
      */
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
         final int viewMode = mViewMode;
+        //mEdges = new Mat(height, width, CvType.CV_8UC1);
         switch (viewMode) {
-
+        
             case VIEW_MODE_RGBA:
                 //Get input frame in RBGA                       //15 fps
                 mRgba = inputFrame.rgba();
@@ -298,7 +335,7 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
                 mGray = inputFrame.gray();
 
                 segmentation();
-                mEdges.copyTo(mRgba);
+                mRgba = mEdges;
                 break;
 
             case VIEW_MODE_OPENCV_LINES:
@@ -344,7 +381,8 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
                 javaNaiveCircles();
                 break;
         }
-
+        
+        mEdges = Mat.zeros(height, width, CvType.CV_8UC1);
         return mRgba;
     }
 
@@ -367,7 +405,7 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
 
         //Bottom half of landscape image                                 //15fps
         if (orientation == 1) {
-            mGray.submat(mGray.rows() / 2, mGray.rows(), mGray.cols()/5, (4*mGray.cols())/5).copyTo(mEdges.submat(mEdges.rows() / 2, mEdges.rows(), mEdges.cols()/5, (4*mEdges.cols())/5));
+            mGray.submat(mGray.rows() / 2, mGray.rows(), 0, mGray.cols()).copyTo(mEdges.submat(mEdges.rows() / 2, mEdges.rows(), 0, mEdges.cols()));
         } 
         //Bottom third of portrait image
         else {
@@ -377,21 +415,21 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
 	//Gaussian blur                                                     //7 fps
         //Imgproc.GaussianBlur(mEdges, mEdges, new Size(15,15), 0.5);
         
-        //Adaptive threshold                                                //10-12 fps
-        Imgproc.adaptiveThreshold(mEdges, mEdges, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY, 3, -0.5);
-
-	//Static threshold
+    	//Static threshold
         //Imgproc.threshold(mEdges, mEdges, 100, 255, Imgproc.THRESH_BINARY);
         
-	//Delete white edge at border of segmentation                       //10-11 fps
-        //mEdges.row(mEdges.rows()/2).setTo(new Scalar(0));
-        
-        //Delete noise (little white points)                                //9 fps
-        Imgproc.erode(mEdges, mEdges, Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(2, 2)));
+        //Adaptive threshold                                                //10-12 fps
+        //Imgproc.adaptiveThreshold(mEdges, mEdges, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY, 3, -0.5);
 
+        //Delete noise (little white points)                                //9 fps
+        //Imgproc.erode(mEdges, mEdges, Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(2, 2)));
+
+        //Delete white edge at border of segmentation                       //10-11 fps
+        mEdges.row(mEdges.rows()/2).setTo(new Scalar(0));
+        
 	    //Canny edge detection                                         //6 fps
-        //double mean = Core.mean(mGray).val[0];
-        //Imgproc.Canny(mEdges, mEdges, 0.66*mean, 1.33*mean);
+        double mean = Core.mean(mGray).val[0];
+        Imgproc.Canny(mEdges, mEdges, 0.66*mean, 1.33*mean);
     }
 
     /**
@@ -421,27 +459,65 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
         Mat tmp = new Mat(mRgba.rows(), mRgba.cols(), CvType.CV_8UC4);
         mRgba.copyTo(tmp);
         
+        boolean isLeftHorizontal = true;
+        boolean isRightHorizontal = true;
+        
         //Get rho and theta values for every line and convert it to cartesian space
         for (int j = 0; j < lines.cols(); j++) {
             double[] vec = lines.get(0, j);
             double rho = vec[0],
                     theta = vec[1];
 
-            Point start, end;
-
-            //Horizontal-ish lines conversion
+            //Vertical-ish lines conversion
             if ((theta < Math.PI / 4 || theta > 3 * Math.PI / 4)) {
-                start = new Point(rho / Math.cos(theta), 0);
-                end = new Point((rho - tmp.rows() * Math.sin(theta)) / Math.cos(theta), tmp.rows());
-            } //Vartical-ish lines conversion
+            	
+            	double topX = rho / Math.cos(theta);
+            	double bottomX = (rho - tmp.rows() * Math.sin(theta)) / Math.cos(theta);
+            	
+            	if (minX < bottomX && bottomX <= midX){
+            		minX = bottomX;
+            		leftStart.x = topX;
+            		leftStart.y = 0;
+            		leftEnd.x = bottomX;
+            		leftEnd.y = tmp.rows();
+            		isLeftHorizontal = false;
+            	}
+            	if (midX < bottomX && bottomX < maxX){
+            		maxX = bottomX;
+            		rightStart.x = topX;
+            		rightStart.y = 0;
+            		rightEnd.x = bottomX;
+            		rightEnd.y = tmp.rows();
+            		isRightHorizontal = false;
+            	}
+            } 
+            //Horizontal-ish lines conversion
             else {
-                start = new Point(0, rho / Math.sin(theta));
-                end = new Point(tmp.cols(), (rho - tmp.cols() * Math.cos(theta)) / Math.sin(theta));
+            	
+            	double leftY = rho / Math.sin(theta);
+            	double rightY = (rho - tmp.cols() * Math.cos(theta)) / Math.sin(theta);
+            	
+            	if (leftY > minLeftY && leftY < maxY  && isLeftHorizontal){
+            		minLeftY = leftY;
+            		leftStart.x = 0;
+            		leftStart.y = leftY;
+            		leftEnd.x = tmp.cols();
+            		leftEnd.y = rightY;
+            	}
+            	if (rightY > minRightY && rightY < maxY && isRightHorizontal){
+            		minRightY = rightY;
+            		rightStart.x = tmp.cols();
+            		rightStart.y = rightY;
+            		rightEnd.x = 0;
+            		rightEnd.y = leftY;
+            	}
             }
-
-            //Draw the line
-            Core.line(tmp, start, end, new Scalar(255, 0, 0), 3);
+            
         }
+        
+        //Draw the line
+        Core.line(tmp, leftStart, leftEnd, new Scalar(255, 0, 0), 3);
+        Core.line(tmp, rightStart, rightEnd, new Scalar(255, 0, 0), 3);
         
         drawToMRgba(tmp);
 
