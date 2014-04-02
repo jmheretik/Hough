@@ -1,4 +1,6 @@
-package com.example.hough;
+package cz.muni.fi.hough.pref;
+
+import com.example.hough.R;
 
 import android.content.Intent;
 import android.content.SharedPreferences;

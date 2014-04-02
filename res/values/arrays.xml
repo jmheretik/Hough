@@ -10,6 +10,7 @@
         <item name="6">Lines - Java naive</item>
         <item name="7">Circles - OpenCV</item>
         <item name="8">Circles - Java naive</item>
+        <item name="10">Lines with horizon - OpenCV</item>
     </string-array>
     <string-array name="modeValues">
         <item name="0">0</item>
@@ -21,6 +22,7 @@
         <item name="6">6</item>
         <item name="7">7</item>
         <item name="8">8</item>
+        <item name="10">10</item>
     </string-array>
      
 </resources>

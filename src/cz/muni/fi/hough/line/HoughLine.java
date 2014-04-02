@@ -1,4 +1,4 @@
-package com.example.hough;
+package cz.muni.fi.hough.line;
 
 import org.opencv.core.Mat;
 

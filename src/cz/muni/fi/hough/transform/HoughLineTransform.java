@@ -1,9 +1,11 @@
-package com.example.hough;
+package cz.muni.fi.hough.transform;
 
 import android.graphics.Bitmap;
 import java.util.Vector;
 
 import org.opencv.core.Mat;
+
+import cz.muni.fi.hough.line.HoughLine;
 
 /**
  * <p/>

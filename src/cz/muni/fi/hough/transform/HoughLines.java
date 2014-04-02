@@ -1,4 +1,4 @@
-package com.example.hough;
+package cz.muni.fi.hough.transform;
 
 import org.opencv.core.Core;
 import org.opencv.core.Mat;

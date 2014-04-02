@@ -17,7 +17,7 @@
             android:title="@string/pref_param_line_thresh"
             android:dialogMessage="@string/pref_param_line_thresh_summary"
             android:inputType="number" 
-            android:defaultValue="80"
+            android:defaultValue="70"
             android:persistent="true"
             android:key="prefLineThresh"/>
         <EditTextPreference
