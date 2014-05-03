@@ -1,7 +1,6 @@
 package cz.muni.fi.hough.pref;
 
-import com.example.hough.R;
-
+import cz.muni.fi.hough.R;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -14,11 +13,11 @@ import android.util.AttributeSet;
  *
  * @author Jakub Medvecký-Heretik
  */
-public class ResetDialogPreference extends DialogPreference {
+public class ResetPreference extends DialogPreference {
 
     protected Context context;
 
-    public ResetDialogPreference(Context context, AttributeSet attrs) {
+    public ResetPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
         this.context = context;
     }

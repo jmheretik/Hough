@@ -21,14 +21,14 @@ public class HoughLines {
     //Maximum value of rho that hough array needs to have
     private int diagonal;
 
-    //Hough array [theta][rho] for interpreting straight lines in polar coordinates
+    //Hough array for interpreting straight lines in polar coordinates
     private int[][] houghSpace;
 
-    //Discrete values of theta that we'll check
-    private int theta;
+    //Discrete values of thetaMax that we'll check
+    private int thetaMax;
 
-    //Get real theta value by multiplying theta by step of theta
-    private double thetaStep;
+    //Theta in radians
+    private double thetaRad;
 
     //How many votes for point in hough array should indicate line
     private int threshold;
@@ -40,23 +40,23 @@ public class HoughLines {
     public HoughLines(Mat image, int threshold) {
         width = image.cols();
         height = image.rows();
-        theta = 180;
-        thetaStep = Math.PI / theta;
+        thetaMax = 180;
+        thetaRad = Math.PI / thetaMax;
         this.threshold = threshold;
-        sinuses = new double[theta];
-        cosinuses = new double[theta];
+        sinuses = new double[thetaMax];
+        cosinuses = new double[thetaMax];
 
         //Pre-compute sin and cos values for every theta
-        for (int t = 0; t < theta; t++) {
-            double realTheta = t * thetaStep;
-            sinuses[t] = Math.sin(realTheta);
-            cosinuses[t] = Math.cos(realTheta);
+        for (int t = 0; t < thetaMax; t++) {
+            double theta = t * thetaRad;
+            sinuses[t] = Math.sin(theta);
+            cosinuses[t] = Math.cos(theta);
         }
 
         diagonal = (int) Math.sqrt(width * width + height * height);
 
         //Initialize hough array
-        houghSpace = new int[theta][diagonal * 2];
+        houghSpace = new int[thetaMax][diagonal * 2];
 
         //Loop through every pixel in bottom half of the input image
         for (int x = 0; x < width; x++) {
@@ -67,7 +67,7 @@ public class HoughLines {
                 if (color[0] != 0) {
 
                     //Compute rho for every theta and add diagonal in case its negative number
-                    for (int t = 0; t < theta; t++) {
+                    for (int t = 0; t < thetaMax; t++) {
 
                         //Conversion from cartesian to polar coordinates: rho = x*cos(theta) + y*sin(theta)
                         //and add 'diagonal' to store negative values of rho
@@ -89,7 +89,7 @@ public class HoughLines {
     public void drawLines(Mat image) {
 
         //Loop through accumulator hough array
-        for (int t = 0; t < theta; t++) {
+        for (int t = 0; t < thetaMax; t++) {
             for (int r = 0; r < diagonal * 2; r++) {
 
                 //If point has more votes than threshold, it strongly indicates line
@@ -100,10 +100,11 @@ public class HoughLines {
                     Point start, end;
 
                     //Vertical-ish lines conversion
-                    if (((t * thetaStep) < Math.PI / 4 || (t * thetaStep) > 3 * Math.PI / 4)) {
+                    if (((t * thetaRad) < Math.PI / 4 || (t * thetaRad) > 3 * Math.PI / 4)) {
                         start = new Point(rho / cosinuses[t], 0);
                         end = new Point((rho - image.rows() * sinuses[t]) / cosinuses[t], image.rows());
-                    } //Horizontal-ish lines conversion
+                    }
+                    //Horizontal-ish lines conversion
                     else {
                         start = new Point(0, rho / sinuses[t]);
                         end = new Point(image.cols(), (rho - image.cols() * cosinuses[t]) / sinuses[t]);

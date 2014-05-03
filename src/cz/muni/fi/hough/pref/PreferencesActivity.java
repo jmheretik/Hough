@@ -1,7 +1,6 @@
 package cz.muni.fi.hough.pref;
 
-import com.example.hough.R;
-
+import cz.muni.fi.hough.R;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -19,10 +18,14 @@ import android.preference.PreferenceManager;
  *
  * @author Jakub Medvecký-Heretik
  */
-public class UserSettingActivity extends PreferenceActivity implements OnSharedPreferenceChangeListener {
+public class PreferencesActivity extends PreferenceActivity implements OnSharedPreferenceChangeListener {
 
     private Preference resetDialogPreference;
     private Intent startIntent;
+
+    public PreferencesActivity() {
+        super();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,7 +33,7 @@ public class UserSettingActivity extends PreferenceActivity implements OnSharedP
 
         //Load default preferences and their values
         addPreferencesFromResource(R.xml.settings);
-        PreferenceManager.setDefaultValues(UserSettingActivity.this, R.xml.settings, false);
+        PreferenceManager.setDefaultValues(PreferencesActivity.this, R.xml.settings, false);
 
         //Print default values of preferences in their summary
         for (int i = 0; i < getPreferenceScreen().getPreferenceCount(); i++) {

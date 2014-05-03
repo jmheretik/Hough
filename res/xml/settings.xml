@@ -68,7 +68,7 @@
     </PreferenceCategory>
     
     <PreferenceCategory android:title="@string/pref_reset" >
-        <com.example.hough.ResetDialogPreference
+        <cz.muni.fi.hough.pref.ResetPreference
             android:title="@string/pref_reset_title"
             android:dialogTitle="@string/pref_reset_title"
             android:dialogMessage="@string/pref_reset_message" 

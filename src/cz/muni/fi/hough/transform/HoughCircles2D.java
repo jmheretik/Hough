@@ -96,11 +96,11 @@ public class HoughCircles2D {
                 if (houghSpace[x][y] > threshold) {
                     Point center = new Point(x, y);
 
-                    //Draw the circle in red color and thickness of 3px
-                    Core.circle(image, center, radius, new Scalar(255, 0, 0), 3);
+                    //Draw the circle in green color and thickness of 3px
+                    Core.circle(image, center, radius, new Scalar(0, 255, 0), 3);
 
-                    //Draw the center in green color
-                    Core.line(image, center, center, new Scalar(0, 255, 0), 3);
+                    //Draw the center in red color
+                    Core.line(image, center, center, new Scalar(255, 0, 0), 3);
 
                     //Increase coordinates to avoid drawing near local maxima 
                     //and keep minimum distance between two different radii
