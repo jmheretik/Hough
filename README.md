@@ -1,2 +1,2 @@
-Hough line detection
+Hough line detection for Android
 =====
