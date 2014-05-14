@@ -420,9 +420,10 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
     private void segmentation() {
 
         //Bottom half of landscape image
-        if (orientation == 1) {
+        if (viewMode == VIEW_MODE_OPENCV_LINES_HORIZON || orientation == 1) {
             matGray.submat(height / 2, height, 0, width).copyTo(matEdges.submat(height / 2, height, 0, width));
-        } //Bottom third of portrait image
+        } 
+        //Bottom third of portrait image
         else {
             matGray.submat(0, height, (2 * width) / 3, width).copyTo(matEdges.submat(0, height, (2 * width) / 3, width));
         }
@@ -469,7 +470,7 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
      */
     private void drawTmpToMRgba(Mat tmp) {
         drawBordersToMRgba();
-        if (orientation == 1) {
+        if (viewMode == VIEW_MODE_OPENCV_LINES_HORIZON || orientation == 1) {
             if (tmp != null) {
                 tmp.submat(height / 2, height, 0, width).copyTo(matRgba.submat(height / 2, height, 0, width));
             }
@@ -484,7 +485,7 @@ public class HoughActivity extends Activity implements CvCameraViewListener2 {
      * Draw segmentation borders to output image
      */
     private void drawBordersToMRgba() {
-        if (orientation == 1) {
+        if (viewMode == VIEW_MODE_OPENCV_LINES_HORIZON || orientation == 1) {
             Core.line(matRgba, new Point(0, height / 2 - 1), new Point(width, height / 2 - 1), new Scalar(0, 255, 0), 1);
         } else {
             Core.line(matRgba, new Point((2 * width) / 3 - 1, 0), new Point((2 * width) / 3 - 1, height), new Scalar(0, 255, 0), 1);
